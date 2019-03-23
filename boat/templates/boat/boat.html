@@ -1,0 +1,418 @@
+{% extends "users/home_base.html" %}
+{% load static %}
+{% block content %}
+
+
+<!--#################################################################################################################################
+--------------------------HTML------------------------------------------------------------------------------------------------
+#####################################################################################################################################-->
+    <audio src="{% static 'boat/sound/ocean.mp3' %}" id="theme_song"></audio>
+
+    <!-- Manual button to start game / voice recognition -->
+    <button id="start_listening" style="display:none"></button>   
+  
+
+    <!-- save game button --> 
+    <button id="save_game" style="display:none"></button>
+
+
+     <!-- Speech Recognition Results -->
+     <div class="speech_results">
+        <span id="speech_results"></span>
+    </div>
+
+
+    <div id="level_start_clock">
+        <!-- display level -->
+        <span id="level_display"></span>
+
+        <!-- start game button -->
+        <button id="start_game" class="start_btn">Start Game</button>
+
+        <!-- display clock -->
+        <div id="stopwatch">
+            <div id="display_minutes"></div>
+                <span>:</span>
+            <div id="display_seconds"></div>
+                <span>:</span>
+            <div id="display_millisec"></div>
+        </div>
+    </div>
+
+
+    <!-- Setting up canvas -->
+    <canvas id="cnv" class="cnv2" width="1000" height="375"></canvas>
+
+
+    <!-- Display user and scores -->
+    <div id="user_stats">
+        <span class="user_text">Ahoy Captain {{ request.user }}!</span>
+        <span class="user_text">Won: {{ wins }}</span>
+        <span class="user_text">Lost: {{ losses }}</span>
+        <span class="user_text">Average Time: {{ average_time }}</span>
+    </div>
+ 
+
+    <!-- Load boat images to be drawn in canvas -->
+    <image id="classic_boat" src="{% static 'boat/classic.png' %}" style="display:none"/>
+    <image id="long_boat" src="{% static 'boat/longboat.png' %}" style="display:none"/>
+
+
+<!--#################################################################################################################################
+--------------------------JAVA-SCRIPT------------------------------------------------------------------------------------------------
+#####################################################################################################################################-->
+
+
+<script type="text/javascript">
+
+
+
+        // information for database
+        var game_time = 0
+
+
+        //sound affects 
+        //var theme_song;
+
+        let game_running = false
+
+
+        // declare speech recognition results and start button 
+        var r = document.querySelector('#speech_results');
+        var start_game = document.querySelector('#start_game');
+        var start_listening = document.querySelector('#start_listening');
+
+
+        // declare clock
+        let display_minutes = document.querySelector('#display_minutes')
+        let display_seconds = document.querySelector('#display_seconds')
+        let display_millisec = document.querySelector('#display_millisec')
+        let date = new Date()
+        date.setHours(0, 0, 0, 0)
+        let stopwatch_interval = null
+
+
+        //declare level display
+        let level_display = document.querySelector('#level_display')
+        level_display.textContent = 'Level 1'
+        
+
+        // declare canvas and objects in canvas 
+        let cnv = document.querySelector('#cnv');
+        cnv.backgroundColor = 'red';
+        let width = cnv.width
+        let height = cnv.height
+        let ctx = cnv.getContext('2d');
+
+
+        // declare boat images 
+        var long_boat = document.querySelector("#long_boat");
+        var classic_boat = document.querySelector("#classic_boat");
+        
+        // define the voice controlled boat 
+        let boat = {
+            px: 900,
+            py: 270,
+            vx: 0,
+            vy: 0,
+            width: 80,
+            height: 100
+        };
+
+        // define the land (win scenario)
+        let land = {
+            px: 5,
+            py: 5,
+            vx: 0,
+            vy: 0,
+            width: 60,
+            height: 60
+        };
+
+        // define an enemy boat (loss scenario)
+        let enemy = {
+            px: 50,
+            py: 125,
+            vx: 0.8,
+            vy: 0,
+            width: 120,
+            height: 120
+        };
+
+        // define an enemy boat (loss scenario)
+        let enemy2 = {
+            px: 0,
+            py: 0,
+            width: 120,
+            height: 120
+        };
+        
+ 
+
+
+//-----------------------JS-FUNCTIONS------------------------------------------------------------------------------------------------------- 
+
+
+        // //send users game data to database
+        // function save_game(won) {
+        //     game_time = date.getMinutes()*60 + date.getSeconds()
+
+        //     axios.post("{% url 'boat:save_game' %}",
+        //             {
+        //                 game_time: game_time,
+        //                 won: won
+        //             }, {
+        //                 headers: {
+        //                     "X-CSRFToken": "{{ csrf_token }}"
+        //                 }
+        //             }
+        //         ).then(function(response) {
+        //         })
+        // }
+
+        // function preload() {
+        //     theme_song = loadSound("boat/test.mp3");
+        // }
+        //function for drawing objects on canvas
+        function draw() {
+            //clear canvas each time function is called
+            ctx.clearRect(0, 0, cnv.width, cnv.height)
+
+            //draw user boat, enemy boats, and land
+            // if (boat.vx > 0) {
+            //     ctx.translate(width, 0);
+            //     ctx.scale(-1, 1);
+            //     ctx.drawImage(classic, boat.px, boat.py, boat.width, boat.height);
+            // } else{
+            //     ctx.drawImage(classic, boat.px, boat.py, boat.width, boat.height);
+            // }   
+            ctx.drawImage(classic_boat, boat.px, boat.py, boat.width, boat.height);
+
+            ctx.drawImage(long_boat, enemy.px, enemy.py, enemy.width, enemy.height);
+
+            ctx.beginPath();
+            ctx.rect(land.px, land.py, land.width, land.height);
+            ctx.lineWidth = 3;
+            ctx.fillStyle = 'rgb(143,188,143)';
+            ctx.fill()
+
+            t += 0.006
+            let p = get_position(t)
+            enemy2.px = p.x
+            enemy2.py = p.y
+            ctx.drawImage(long_boat, enemy2.px, enemy2.py, enemy2.width, enemy2.height);                      
+        }
+        
+
+        // perametric function for enemy boat #2
+        let t = 0
+        let get_position = function(t) {
+            let cx = 400
+            let cy = 120
+            let x = cx + 120*Math.cos(t)
+            let y = cy + 120*Math.sin(t)
+            return {x: x, y: y}
+        }
+
+
+        // check for win/loss scenario, update position of objects in canvas & set boundaries
+
+        var time = 3;
+        
+        function main_loop() {
+
+            if (check_collision(boat, enemy) || check_collision(boat, enemy2)) { // lose
+                game_running = false
+                cnv.classList.remove("cnv");
+                cnv.classList.add("cnv_loss");
+
+                boat.px = 900
+                boat.py = 270
+                boat.vx = 0
+                boat.vy = 0
+   
+                save_game(false)
+
+                stop_clock()
+                date.setHours(0, 0, 0, 0)
+                speech_results.textContent = 'TRY AGAIN'
+                start_game.disabled = false
+            } else if (check_collision(boat, land)) { // win
+                cnv.classList.remove("cnv");
+                cnv.classList.add("cnv_win");
+
+                boat.px = 900
+                boat.py = 270
+                boat.vx = 0
+                boat.vy = 0
+
+                save_game(true)
+
+                stop_clock()
+                date.setHours(0, 0, 0, 0)
+                speech_results.textContent = 'GREAT JOB'
+
+                // setInterval(function() {
+                //     if(time > 0) {
+                //     time--;
+                //     } else {
+                //     location.href="{ url 'boat:level_2' %}"
+                //     }
+                // },1000)
+            }
+       
+
+
+            //update position of objects in canvas
+            boat.px += boat.vx
+            boat.py += boat.vy
+
+            enemy.px += enemy.vx
+            enemy.py += enemy.vy
+        
+            land.py += land.vy
+            land.px += land.vx
+
+            //set boundaries for objects in canvas
+            if (boat.px + boat.width >= cnv.width) {
+                boat.px = cnv.width - boat.width - 5
+                boat.vx = 0
+                boat.vy = 0
+            }
+            if (boat.px <= 0) {
+                boat.px = 5
+                boat.vx = 0
+                boat.vy = 0
+            }
+            if (boat.py + boat.height >= cnv.height) {
+                boat.py = cnv.height - boat.height - 5
+                boat.vx = 0
+                boat.vy = 0
+            } 
+            if (boat.py <= 0) {
+                boat.py = 5
+                boat.vx = 0
+                boat.vy = 0
+            }
+            if (enemy.px >= 220 || enemy.px <= 0){
+                    enemy.vx *= -1
+                    enemy.vy *= 0
+            }
+            if(enemy.py >= 1000 || enemy.py <= 0){
+                    enemy.vx = -1
+                    enemy.vy = 0
+            }
+            draw()
+            if (game_running) {
+                window.requestAnimationFrame(main_loop);
+            }
+        }
+
+
+        // function for calculating the overlap between two rectangles
+        function check_collision(rect1, rect2) {
+            let x_overlap = Math.max(0, Math.min(rect1.px + rect1.width, rect2.px + rect2.width) - Math.max(rect1.px, rect2.px))
+            let y_overlap = Math.max(0, Math.min(rect1.py + rect1.height, rect2.py + rect2.height) - Math.max(rect1.py, rect2.py))
+            let overlapArea = x_overlap * y_overlap
+            return overlapArea != 0
+        }
+
+
+        //stop watch function 
+        function start_clock() {
+            if(stopwatch_interval === null){
+            stopwatch_interval = setInterval(function() {
+                date.setMilliseconds(date.getMilliseconds() + 100)
+                let millis = date.getMilliseconds()
+                if (millis == 0) {
+                    millis = '000'
+                }
+                display_millisec.innerText = millis
+                display_seconds.innerText = date.getSeconds()
+                display_minutes.innerText = date.getMinutes()
+            }, 100)
+            }
+        }
+
+        function stop_clock() {
+            if(stopwatch_interval != null){
+             clearInterval(stopwatch_interval);
+             stopwatch_interval = null
+            }
+            display_millisec.innerText = 000
+            display_seconds.innerText = 0
+            display_minutes.innerText = 0
+         }
+
+
+
+
+        //start game button triggers clock and speech recognition 
+        start_game.onclick = function() {
+            
+            let theme_song = document.querySelector('#theme_song')
+            theme_song.play()
+            game_minutes = 0
+            game_seconds = 0
+            game_win = 0
+            game_loss = 0
+            start_clock()
+            start_listening.onclick()
+            draw()
+            game_running = true
+            window.requestAnimationFrame(main_loop);
+            this.disabled = true
+        }
+        
+        //speech recognition function
+        start_listening.onclick = function () {
+            if ('webkitSpeechRecognition' in window) {
+                var speechRecognizer = new webkitSpeechRecognition();
+
+                //set rules for speech recognition 
+                speechRecognizer.continuous = true;
+                speechRecognizer.interimResults = true;
+                speechRecognizer.lang = 'en-US';
+
+                //start speech recognition function 
+                speechRecognizer.start();
+
+                //function to process speech recognition results 
+                speechRecognizer.onresult = function(event) {
+                    var last = event.results.length - 1;
+                    var command = event.results[last][0].transcript;
+
+                    //display results on screen 
+                    speech_results.textContent = 'Voice Input: ' + command + '.';
+
+                    //dom manipulation based on commands 
+                    command = command.toLowerCase()
+                    if (command === 'north' || command[0] == 'n') {
+                        boat.vy = -1
+                        draw()
+                        start_listening.onclick()
+                    } else if (command === 'south' || command[0] == 's') {
+                        boat.vy = 1
+                        draw()
+                        start_listening.onclick()
+                    } else if (command === 'west' || command[0] == 'w') {
+                        boat.vx = -1
+                        draw()
+                        start_listening.onclick()
+                    } else if (command === 'east' || command[0] == 'e') {
+                        boat.vx = 1
+                        draw()
+                        start_listening.onclick()
+                    } else if (command === 'halt' || command[0] == 'h') {
+                        boat.vx = 0
+                        boat.vy = 0
+                        draw()
+                        start_listening.onclick()
+                    }else {
+                        start_listening.onclick()
+                    }
+                }
+            }
+        };
+</script>
+{% endblock %}

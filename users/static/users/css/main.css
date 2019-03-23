@@ -1,0 +1,563 @@
+/* #####################################################
+    -FONTS-
+#####################################################*/
+
+@import url('https://fonts.googleapis.com/css?family=Parisienne');
+@import url('https://fonts.googleapis.com/css?family=Share+Tech+Mono');
+
+
+
+/* #####################################################
+    -BODY-
+#####################################################*/
+
+body{
+    background-color: rgba(176,224,230,10);
+    /* background-image:url(https://wallpapercave.com/wp/02IiKRa.jpg)   
+    } */
+}
+
+
+.flexboat{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+.flexboat_2{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#user_stats{
+    background-color:rgba(176,224,230,10);
+    display: flex;
+    align-items: flex-start;
+    flex-direction:row;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+
+/* #####################################################
+    -FORMS-
+#####################################################*/
+
+#reg_form {
+    font-size: 120%;
+    font-family: 'Parisienne', cursive;
+    background-color:rgba(255,255,240, .6);
+    padding: 25px;
+    color:black;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0% 16% 0% 16%;
+    text-align:left;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+
+#log_form{
+    display: flex;
+    background-color:rgba(255,255,240, .6);
+    font-size: 120%;
+    font-family: 'Parisienne', cursive;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 0% 16% 0% 16%;
+    text-align:center;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+
+
+
+/* #####################################################
+    -BUTTONS-
+#####################################################*/
+
+.btn{
+    display: flex;
+    font-size: 100%;
+    font-family: 'Parisienne', cursive;
+    background-color:rgba(255,255,240, .6);
+    border-radius: 8px 8px 8px 8px;
+    width: 8%;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 1.5% 16% 0% 46%;
+    text-align:center;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+
+.start_btn{
+    font-size: 100%;
+    font-family: 'Parisienne', cursive;
+    background-color:rgba(255,255,240, .6);
+    border-radius: 8px 8px 8px 8px;
+    width: 8%;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+
+
+
+/* #####################################################
+    -NAVIGATION BAR-
+#####################################################*/
+
+#menu_sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    justify-content:space-evenly;
+    flex-wrap: wrap;
+    top: 6%;
+    margin-left: 85%;
+}
+/* Dropdown Button */
+.dropbtn {
+    background-color:rgba(255,255,240, .6);
+    border-radius: 12px 12px 12px 12px;
+    color: black;
+    position: -webkit-sticky;
+    position: sticky;
+    justify-content:space-evenly;
+    flex-wrap: wrap;
+    font-family: 'Parisienne', cursive;
+    font-size: 120%;
+    border: none;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+    cursor: pointer;
+}
+  
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+  
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color:rgba(255,255,240,.6);
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+  
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    font-family: 'Parisienne', cursive;
+    text-decoration: none;
+    display: block;
+
+}
+  
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color:rgba(255,255,240, .6);
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+  
+  /* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    background-color:rgba(255,255,240, .6);
+}
+
+a{
+   color:black;
+}
+
+
+
+/* #####################################################
+    -TITLE and IMAGE-
+#####################################################*/
+
+#boat {
+    margin: 0% 0% 1% 18.5%;
+}
+
+#title_image {
+    width: 35%;
+}
+
+
+
+/* #####################################################
+    -STOP WATCH-
+#####################################################*/
+#level_start_clock {
+    background-color: rgba(176,224,230,10);
+    display: flex;
+    align-items: flex-start;
+    flex-direction:row;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    margin-bottom: .5%;
+}
+
+#stopwatch {
+    color: black;
+    /* background-color: rgba(176,224,230,10); */
+    background-size:auto;
+    display: flex;
+    align-items:center;
+    flex-direction:row;
+    justify-content:center;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+/* #####################################################
+    -RANDOM TEXT-
+#####################################################*/
+
+#level_display {
+    font-size: 90%;
+    font-family: 'Parisienne', cursive;
+}
+
+.center_text {
+    text-align: center;
+    font-size: 120%;
+    font-family: 'Parisienne', cursive;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.user_text {
+    text-align: center;
+    font-size: 90%;
+    font-family: 'Parisienne', cursive;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+
+
+/* #####################################################
+    -MODALS-
+#####################################################*/
+.modal_content {
+    width: 200px;
+    height: 100px;
+    background-color: rgba(255,255,240,.7);
+    position: absolute;
+    left:50%;
+    top:50%;
+    padding-top: 1.5%;
+    transform: translate(-50%, -50%);
+    z-index:1;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.modal_content a {
+    color: black;
+    padding-top: 4%;
+    padding-bottom: 7%;
+    width: 100%;
+    height: 17%;
+    font-family: 'Parisienne', cursive;
+    font-size: 130%;
+    text-decoration: none;
+    text-align: center;
+    /* display: block; */
+
+}
+.modal_content a:hover {
+    background-color:rgba(176,224,230,.6);
+}
+
+
+.modal_game {
+    width: 200px;
+    height: 150px;
+    padding-top: 1%;
+    background-color: rgba(255,255,240,.7);
+    position: absolute;
+    left:50%;
+    top:50%;
+    transform: translate(-50%, -50%);
+    z-index:1;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.modal_game a {
+    color: black;
+    width: 100%;
+    height: 10%;
+    padding-top: 5%;
+    padding-bottom: 5%;
+    font-family: 'Parisienne', cursive;
+    font-size: 90%;
+    text-decoration: none;
+    text-align: center;
+}
+.modal_game a:hover {
+    background-color:rgba(176,224,230,.6);
+}
+
+
+
+.modal_logout {
+    width: 200px;
+    height: 100px;
+    background-color: rgba(255,255,240,.7);
+    position: absolute;
+    left:50%;
+    top:50%;
+    padding-top: 1.5%;
+    transform: translate(-50%, -50%);
+    z-index:1;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.modal_logout a {
+    color: black;
+    padding-top: 2%;
+    padding-bottom: 3%;
+    width: 100%;
+    height: 17%;
+    font-family: 'Parisienne', cursive;
+    font-size: 100%;
+    text-decoration: none;
+    text-align: center;
+    /* display: block; */
+
+}
+.modal_logout a:hover {
+    background-color:rgba(176,224,230,.6);
+}
+.modal_lucario {
+    width: 200px;
+    height: 100px;
+    background-color: rgba(255,255,240,.7);
+    position: absolute;
+    left:50%;
+    top:50%;
+    padding-top: 0%;
+    transform: translate(-50%, -50%);
+    z-index:1;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    justify-content: space-evenly;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.modal_lucario span, a{
+    color: black;
+    width: 100%;
+    height: 17%;
+    padding-top: 1%;
+    padding-bottom: 2%;
+    font-family: 'Parisienne', cursive;
+    font-size: 100%;
+    text-decoration: none;
+    text-align: center;
+}
+.modal_lucario a:hover {
+    background-color:rgba(176,224,230,.6);
+}
+
+.modal_load {
+    width: 200px;
+    height: 200px;
+    background-color: rgba(255,255,240,1);
+    position: absolute;
+    left:50%;
+    top:50%;
+    padding-top: 1.5%;
+    transform: translate(-50%, -50%);
+    z-index:1;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.modal_load a {
+    color: black;
+    padding-top: 2%;
+    padding-bottom: 3%;
+    width: 100%;
+    height: 17%;
+    font-family: 'Parisienne', cursive;
+    font-size: 100%;
+    text-decoration: none;
+    text-align: center;
+    /* display: block; */
+
+}
+.modal_load a:hover {
+    background-color:rgba(176,224,230,.6);
+}
+
+
+
+.close {
+    position: absolute;
+    top: 0;
+    right: 14px;
+    font-size: 42px;
+    transform: rotate(45deg);
+    background-color: Transparent;
+    background-repeat:no-repeat;
+    border: none;
+    cursor:pointer;
+    overflow: hidden;  
+    outline: none;
+}
+
+.lucario_mission {
+    width: 300px;
+    height: 300px;
+    background-color: black;
+    position: absolute;
+    left:50%;
+    top:50%;
+    padding-top: 1.5%;
+    transform: translate(-50%, -50%);
+    z-index:1;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.lucario_mission pre, #accept{
+    color: palegreen;
+    padding-top: 2%;
+    padding-bottom: 3%;
+    width: 100%;
+    height: 17%;
+    font-family: 'Parisienne', cursive;
+    font-size: 100%;
+    text-decoration: none;
+    text-align: center;
+    /* display: block; */
+    }
+.scroll_modal {
+    width: 300px;
+    height: 300px;
+    background-color:  rgba(255,255,240,1);
+    position: absolute;
+    left:50%;
+    top:50%;
+    padding-top: 0%;
+    transform: translate(-50%, -50%);
+    z-index:1;
+    border-radius: 12px;
+    display: none;
+    flex-direction: column;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.scroll_modal pre{
+    color: black;
+    padding-top: 0%;
+    padding-bottom: 3%;
+    width: 100%;
+    height: 17%;
+    font-family: 'Parisienne', cursive;
+    font-size: 100%;
+    text-decoration: none;
+    text-align: center;
+    /* display: block; */
+}
+
+
+
+
+
+/* #####################################################
+    -SPEECH RECOGNITION RESULTS-
+#####################################################*/
+
+.speech_results {
+    background-color:rgba(255,255,240, .6);
+    font-size: 90%;
+    font-family: 'Share Tech Mono', monospace;
+    width:25%;
+    height: 3%;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+    margin-bottom: 1%;
+    margin-right: 30%;
+    margin-left: 38%;
+}
+
+
+
+/* #####################################################
+    -CANVAS-
+#####################################################*/
+
+.cnv{
+    background-image:url(/static/room2.png);   
+    border: 1px solid black;
+    margin: .05% 9% 1% 25%;
+}
+.cnv2{
+    background-image:url(/static/mid_evil_map_5.png);   
+    border: 1px solid black;
+    margin: .05% 9% 1% 11%;
+}
+.cnv3{
+    background-image:url(/static/jungle2.jpg);   
+    border: 1px solid black;
+    margin: .05% 9% 1% 37%;
+}
+
+
+
+/* #####################################################
+    -INSTRUCIONS PAGE-
+#####################################################*/
+
+#instructions {
+    background-color:rgba(255,255,240, .6);
+    border-radius: 8px 8px, 8px 8px;
+    text-align: center;
+    font-size: 160%;
+    font-family: 'Parisienne', cursive;
+    display: flex;
+    justify-content: center;
+    margin: 1% 15% 1% 40%;
+    flex-wrap: wrap;
+    width:20%;
+    height: 5%;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+
+#controls {
+    background-color:rgba(255,255,240, .6);
+    border-radius: 8px, 8px, 8px, 8px;
+    text-align: center;
+    font-size: 120%;
+    font-family: 'Parisienne', cursive;
+    display: flex;
+    justify-content: center;
+    margin: 1% 15% 1% 40%;
+    flex-wrap: wrap;
+    width:20%;
+    height: 3.5%;
+    box-shadow: 0 0 10px 0 rgba(143,188,143,.7);
+}
+.alert-success {
+    text-align: center;
+    font-size: 90%;
+    font-family: 'Parisienne', cursive;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}

@@ -1,0 +1,9 @@
+{% extends 'users/base.html' %}
+
+{% block content %}
+<ul>
+    {% for game in top_3 %}
+    <li class="center_text">{{ request.user }} : {{ game.score }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

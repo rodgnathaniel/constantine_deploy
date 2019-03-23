@@ -1,0 +1,957 @@
+{% extends "users/home_base.html" %}
+{% load static %}
+{% block content %}
+
+
+<!--#################################################################################################################################
+--------------------------HTML------------------------------------------------------------------------------------------------
+#####################################################################################################################################-->
+
+    <!-- Setting up canvas -->
+    <span class="user_text">Welcome {{ request.user }}</span>
+    <canvas id="cnv" class="cnv" width="600" height="370"></canvas>
+
+
+    <audio src="{% static 'boat/sound/n_song.mp3' %}" id="theme_song"></audio>
+    <audio src="{% static 'boat/sound/teleport.wav' %}" id="teleport"></audio>
+    <audio src="{% static 'boat/sound/collision_sound.mp3' %}" id="collision"></audio>
+    <audio src="{% static 'boat/sound/piano.mp3' %}" id="piano"></audio>
+
+    <button id="start_listening" style="display:none"></button>   
+    <span id="speech_results" style="display:none"></span>
+
+
+    <div class="modal_content">
+        <button class="close" id="close_computer" style="display:none"></button>
+        <a href="{% url 'login' %}">Login</a>
+        <a href="{% url 'register' %}">Register</a>
+    </div>
+
+
+    <div class="modal_game">
+        <button class="close" id="close_nes"></button>
+        {% for mode in modes %}
+        <a href="{% url 'boat:iguana' %}?game_mode={{mode.id}}">Iguana Jump - {{mode.name}}</a>
+        {% endfor %}
+        <a href="{% url 'boat:constantine' %}">Constantine</a>
+    </div>
+
+
+    <div class="modal_logout">
+        <button class="close" id="close_logout" style="display:none"></button>
+        <a id="save" href="#">Save Game</a>
+        <a id="load" href="#">Load Game</a>
+        <a href="{% url 'logout' %}">Logout</a>
+    </div>
+
+
+    <div class="modal_lucario">
+        <button class="close" id="close_lucario" style="display:none"></button>
+        <span>{{ request.user }}, I need your help...</span>
+        <a href="#" id="help">Help Lucario</a>
+    </div>
+
+    <div class="modal_load">
+        <button class="close" id="close_load"></button>
+        {% for state in states %}
+        <a href="{% url 'boat:home' %}?game_state={{state.id}}"> - {{ request.user }} : {{ state.id }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="lucario_mission">
+        <button class="close" id="close_mission"></button>
+        <pre id="mission_display">Lucario_is_trapped    </pre>
+        <a href="#" id="accept">):</a>
+    </div>
+
+    <div class="scroll_modal">
+        <button class="close" id="close_scroll"></button>
+        <pre id="scroll_display">(...when the haunted painting fell off the 
+        wall this scroll fell from behind it...)
+
+        {{ request.user }}, I see you have found the 
+        scroll.
+        Congratulations. 
+        Lucario came here to help you lift a 
+        curse from your home but he is 
+        now locked away. This curse is not 
+        binded by the laws of time and space;
+        sadly, you are.
+    
+        </pre>
+    </div>
+
+ 
+
+    <!-- load images to be drawn -->
+    <img id="hero" src="{% static 'boat/player.png' %}" style="display:none"/>
+    <img id="spook" src="{% static 'boat/spook3.png' %}" style="display:none"/>
+    <img id="spooky" src="{% static 'boat/spook.png' %}" style="display:none"/>
+    <img id="spook4" src="{% static 'boat/spook4.png' %}" style="display:none"/>
+    <img id="blue" src="{% static 'boat/blue.png' %}" style="display:none"/>
+    <img id="duskball" src="{% static 'boat/duskball.png' %}" style="display:none"/>
+    <img id="moonball" src="{% static 'boat/pokeball.png' %}" style="display:none"/>
+    <img id="spook5" src="{% static 'boat/spook5.png' %}" style="display:none"/>
+    <img id="lucario" src="{% static 'boat/lucario.png' %}" style="display:none"/>
+    <img id="windows" src="{% static 'boat/windows.png' %}" style="display:none"/>
+    <img id="bear" src="{% static 'boat/Teddy_bear.png' %}" style="display:none"/>
+    <img id="scroll" src="{% static 'boat/scroll.png' %}" style="display:none"/>
+
+
+<!--#################################################################################################################################
+--------------------------JAVA-SCRIPT------------------------------------------------------------------------------------------------
+#####################################################################################################################################-->
+<script type="text/javascript">
+
+    var start_listening = document.querySelector('#start_listening');
+    var r = document.querySelector('#speech_results');
+
+
+    //buttons
+    var close_computer = document.querySelector('#close_computer')
+    var close_nes = document.querySelector('#close_nes')
+    var close_logout = document.querySelector('#close_logout')
+    var close_lucario = document.querySelector('#close_lucario')
+    var close_load = document.querySelector('#close_load')
+    var help = document.querySelector('#help')
+    var save = document.querySelector('#save')
+    var load = document.querySelector('#load')
+    var accept = document.querySelector('#accept')
+
+
+    //declare canvas
+    let cnv = document.querySelector('#cnv');
+    cnv.backgroundColor = 'red';
+    let width = cnv.width
+    let height = cnv.height
+    let ctx = cnv.getContext('2d');
+
+
+    // // declare images 
+    var hero = document.querySelector("#hero");
+    var spook = document.querySelector("#spook");
+    var spooky = document.querySelector("#spooky");
+    var spook4 = document.querySelector("#spook4");
+    var spook5 = document.querySelector("#spook5");
+    var blue = document.querySelector("#blue");
+    var lucario_img = document.querySelector("#lucario");
+    var windows = document.querySelector("#windows");
+    var moonball = document.querySelector("#moonball");
+    var bear = document.querySelector("#bear");
+    var scroll = document.querySelector("#scroll");
+
+    function convertBoolean(t) {
+        return t == 'True'
+    }
+
+
+    //game data 
+    {% if game_state %}
+
+        let True = true
+        let False = false
+        let stair_collision = {{ game_state.stair_collision }}
+        let cabnet_collision = {{ game_state.cabnet_collision }}
+        let rail2_collision = {{ game_state.rail2_collision }}
+        let duskball_collision = {{ game_state.duskball_collision }}
+        let painting_collision = {{ game_state.painting_collision }}
+        let haunted_collision = {{ game_state.haunted_collision }}
+        let lucario_collision = {{ game_state.lucario_collision }}
+
+        let duskball_is = {{ game_state.duskball_is }}
+        let haunted_painting_is = {{ game_state.haunted_painting_is }}
+        let lucario_is = {{ game_state.lucario_is }}
+        let computer_on = {{ game_state.computer_on }}
+        let poke_ball_is = {{ game_state.poke_ball_is }}
+        let left_corner_is = {{ game_state.left_corner_is }}
+        let right_corner_is = {{ game_state.right_corner_is }}
+        let bookshelf_is = {{ game_state.bookshelf_is }}
+        let bear_is = {{ game_state.bear_is }} 
+        let move_ball_down = {{ game_state.move_ball_down }}
+        let ball_gone = {{ game_state.ball_gone }}
+        let scroll_is = {{ game_state.scroll_is }}
+    {% else %}
+
+        let stair_collision = 0
+        let cabnet_collision = 0
+        let rail2_collision = 0
+        let duskball_collision = 0
+        let painting_collision = 0
+        let haunted_collision = 0
+
+        let lucario_collision = false
+        let duskball_is = false
+        let haunted_painting_is = false
+        let lucario_is = false
+        let computer_on = false
+        let poke_ball_is = false
+        let left_corner_is = false
+        let right_corner_is = false
+        let bookshelf_is = false
+        let bear_is = false 
+        let move_ball_down = false
+        let ball_gone = false
+        let scroll_is = false
+    {% endif %}
+     
+
+
+
+
+    //declare sounds
+    let theme_song = document.querySelector('#theme_song') 
+    let teleport = document.querySelector('#teleport') 
+    let collision = document.querySelector('#collision') 
+    let piano = document.querySelector('#piano') 
+
+    //functions to play sounds
+    var play_music = function(){
+        theme_song.play()
+        play_music.disabled = true
+    }
+    var teleport_sound = function(){
+        teleport.play()
+    }
+    var collision_sound = function(){
+        collision.play()
+    }
+    var piano_sound = function(){
+        piano.play()
+    }
+
+
+    //user sprite & objects that move 
+    let player = {
+        px: 170,
+        py: 220,
+        vx: 0,
+        vy: 0,
+        width: 50,
+        height: 50
+    };
+
+    let lucario = {
+        py: 300,
+        px: 520,
+        vx: 0,
+        vy: 0,
+        width: 50,
+        height: 60
+    }
+
+    let dusk_ball = {
+        px: 50,
+        py: 285,
+        width: 18,
+        height: 18
+    }
+    let moon_ball = {
+        px: 300,
+        py: 3550,
+        width: 22,
+        height: 22
+    }
+
+
+    //player boundaries 
+    let ceiling = {
+        px: 0,
+        py: 0,    
+        width: 100,
+        height: 90
+    }
+
+    let cabnet = {
+        px: 100,
+        py: 0,    
+        width: 70,
+        height: 90
+    }
+    let bookshelf = {
+        px: 178,
+        py: 0,    
+        width: 98,
+        height: 90
+    }
+    let teddy_bear = {
+        px: 340,
+        py: 2220,
+        vx: 0,
+        vy: 0,
+        width: 30,
+        height: 30
+    }
+
+    // let ceiling3 = {
+    //     px: 170,
+    //     py: 0,    
+    //     width: 115,
+    //     height: 90
+    // }
+
+    let ceiling2 = {
+        px: 280,
+        py: 0,    
+        width: 240,
+        height: 70
+    }
+
+    let painting = {
+        px: 525,
+        py: 0,
+        width: 85,
+        height: 50
+    }
+
+    let rail = {
+        px: 388,
+        py: 135,
+        width: 105,
+        height: 7.5
+    }
+
+    let rail2 = {
+        px: 370,
+        py: 75,
+        width: 7.5,
+        height: 60
+    }
+
+    let tv = {
+        px: 272,
+        py: 155,    
+        width: 35,
+        height: 50
+    }
+
+    let left_wall = {
+        px: 0,
+        py: 0,    
+        width: 2,
+        height: 370
+    }
+
+    let right_wall = {
+        px: 598,
+        py: 0,    
+        width: 2,
+        height: 370
+    }
+
+    let floor = {
+        px: 0,
+        py: 368,    
+        width: 600,
+        height: 2
+    }
+
+    let left_corner = {
+        px: 0,
+        py: 350,
+        width: 20,
+        height: 20
+    }
+    let right_corner = {
+        px: 580,
+        py: 350,
+        width: 20,
+        height: 20
+    }
+
+    let stairs = { //relocates player to starting position
+        px: 380,
+        py: 60,    
+        width: 35,
+        height: 75
+    }
+
+    //display haunted images
+    let computer_screen = {
+        px: 13,
+        py: 68,    
+        width: 36,
+        height: 18
+    }
+
+    let tv_screen = {
+        px: 277,
+        py: 176,    
+        vx: 0,
+        vy: 0,
+        width: 36,
+        height: 22
+    }
+    
+    let haunted_painting = {
+        px: 552,
+        py: 30,
+        width: 55,
+        height: 31
+    }
+    let scroll_ = {
+        px: 5000,
+        py: 1000,
+        width: 45,
+        height: 55
+    }
+
+    //objects that load application operations on contact
+    let computer = { 
+        px: 0,
+        py: 100,    
+        width: 17,
+        height: 7
+    }
+
+    let nes = {
+        px: 272,
+        py: 242,    
+        vx: 0,
+        vy: 0,
+        width: 50,
+        height: 10
+    }
+
+    let bed = {
+        px: 37,
+        py: 242,    
+        width: 25,
+        height: 5
+    }
+
+
+
+
+
+//-----------------------JS-FUNCTIONS------------------------------------------------------------------------------------------------------- 
+
+
+    //send users game data to database
+    function save_game() {        
+        axios.post("{% url 'boat:save_state' %}",
+                {
+                    duskball_is: duskball_is,
+                    haunted_painting_is: haunted_painting_is,
+                    lucario_is: lucario_is,
+                    computer_on: computer_on,
+                    poke_ball_is: poke_ball_is,
+                    left_corner_is: left_corner_is,
+                    right_corner_is: right_corner_is,
+                    bookshelf_is: bookshelf_is,
+                    bear_is: bear_is, 
+                    move_ball_down: move_ball_down,
+                    ball_gone: ball_gone,
+                    scroll_is: scroll_is,
+                    stair_collision: stair_collision,
+                    cabnet_collision: cabnet_collision,
+                    rail2_collision: rail2_collision,   
+                    duskball_collision: rail2_collision,
+                    painting_collision: rail2_collision,
+                    haunted_collision: rail2_collision,
+                    lucario_collision: lucario_collision,
+                }, {
+                    headers: {
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    }
+                }
+            ).then(function(response) {
+            })
+    }
+
+    // funtions to open modals
+    var computer_contact = function() {
+        document.querySelector(".modal_content").style.display = "flex";  //login and register modal
+    }
+
+    var nes_contact = function() {
+        document.querySelector(".modal_game").style.display = "flex";  //mini games modal
+    }
+
+    var bed_contact = function() {
+        document.querySelector(".modal_logout").style.display = "flex"; //logout, save game, load game modal
+    }
+
+    var lucario_contact = function() {
+        document.querySelector(".modal_lucario").style.display = "flex"; //modal once you talk to lucario first time
+    }
+
+    var lucario_mission = function(){
+        document.querySelector(".lucario_mission").style.display = "flex"; //modal for lucarios mission on computer
+    }
+    var read_scroll = function(){
+        document.querySelector(".scroll_modal").style.display = "flex"; //modal for scroll
+    }
+
+    load.onclick = function(){
+        document.querySelector(".modal_logout").style.display = "none"; 
+        document.querySelector(".modal_load").style.display = "flex"; //load logged in users saved games 
+    }
+
+    close_computer.onclick = function() {
+        document.querySelector(".modal_content").style.display = "none"; //close login, register modal
+    }
+
+    close_nes.onclick = function() {
+        document.querySelector(".modal_game").style.display = "none"; // close mini games modal
+    }
+
+    close_logout.onclick = function() {
+        document.querySelector(".modal_logout").style.display = "none"; //close logout, save game , register modal 
+    }
+
+    close_load.onclick = function() {
+        document.querySelector(".modal_load").style.display = "none";  //close loae players game modal
+    }
+
+    close_lucario.onclick = function() {
+        document.querySelector(".modal_lucario").style.display = "none"; // close lucario 1st contact modal
+    }
+
+    close_mission.onclick = function() {
+        document.querySelector(".lucario_mission").style.display = "none";//close lucarios mission modal
+    }
+    close_scroll.onclick = function() {
+        document.querySelector(".scroll_modal").style.display = "none";//close scroll
+    }
+
+    accept.onclick = function(){
+        document.querySelector(".lucario_mission").style.display = "none"; //accept lucarios mission 
+        moon_ball.px = 300
+        moon_ball.py = 350  
+        poke_ball_is = true
+    }
+
+    //makes
+    help.onclick = function() {
+        close_lucario.onclick()
+        help.disabled = true
+        computer_contact.disabled = true
+        lucario.py -= 235
+        lucario.vx = -.6
+    }
+
+    //function to save users game and reload page
+    save.onclick = function(){
+        save_game()
+        document.location.reload()
+    }
+
+
+
+    //function for drawing objects on canvas
+    function draw() {
+        // clear canvas each time function is called
+        ctx.clearRect(0, 0, cnv.width, cnv.height)
+
+        if (ball_gone) {
+            ctx.drawImage(scroll, scroll_.px, scroll_.py, scroll_.width, scroll_.height);
+        }
+
+        //draw users character
+        ctx.drawImage(hero, player.px, player.py, player.width, player.height);
+
+        //1st time down stairs
+        if (stair_collision >= 1){
+            ctx.drawImage(spook, tv_screen.px, tv_screen.py, tv_screen.width, tv_screen.height);
+        }
+
+        //2nd time down stairs
+        if (stair_collision >= 2){
+            ctx.drawImage(spooky, computer_screen.px, computer_screen.py, computer_screen.width, computer_screen.height);
+        }
+
+        //spaw duskbal 3 times down stairs and collision with file cadnet and  vertical guard rail 
+        if (stair_collision >= 3 && cabnet_collision >= 10 && rail2_collision >= 10) {
+            duskball_is = true
+            if (duskball_collision >= 1){
+                dusk_ball.px = 320
+                dusk_ball.py = 70
+            }
+            ctx.drawImage(duskball, dusk_ball.px, dusk_ball.py, dusk_ball.width, dusk_ball.height);
+        }
+
+        //spawn haunted painting after colliding twice with duskball and with painting 
+        if (painting_collision >= 10){
+            if (duskball_collision >= 2){
+                haunted_painting_is = true
+                ctx.drawImage(spook4, tv_screen.px, tv_screen.py, tv_screen.width, tv_screen.height);
+                ctx.drawImage(blue, computer_screen.px, computer_screen.py, computer_screen.width, computer_screen.height);
+                ctx.drawImage(spook5, haunted_painting.px, haunted_painting.py, haunted_painting.width, haunted_painting.height);
+            }
+        }
+
+        //spawn lucarion after colliding with haunted painting and going down stairs just once 
+        if (haunted_collision >= 1 && stair_collision === 1) {
+                lucario_is = true
+                ctx.drawImage(lucario_img, lucario.px, lucario.py, lucario.width, lucario.height);
+        }
+
+        //make lucario dissapear 
+        // if (lucario_collision > 0 && haunted_collision != 1 && stair_collision < 1 || stair_collision > 1) {
+        //         lucario_is = false
+
+        //turn computer on once player decides to help lucario
+        // }
+        if (lucario_collision) {
+            ctx.drawImage(windows, computer_screen.px, computer_screen.py, computer_screen.width, computer_screen.height);
+            computer_on = true
+        }
+
+        //draw pokeball once player accepts to help lucario via computer
+        // if (poke_ball_is) {
+        ctx.drawImage(moonball, moon_ball.px, moon_ball.py, moon_ball.width, computer_screen.height);
+        // }
+        if (move_ball_down) {
+            ctx.drawImage(bear, teddy_bear.px, teddy_bear.py, teddy_bear.width, teddy_bear.height);
+        
+        } if (ball_gone) {
+            teddy_bear.py = 2320
+            teddy_bear.px = 1730
+            lucario.py = 5000
+            lucario.px = 5000
+            haunted_painting.py = 60
+        }
+    
+
+        //draw collision objects for debugging purposes
+        let objects = [right_corner, left_corner, floor, computer, computer_screen, tv, tv_screen, nes, left_wall, right_wall, ceiling, cabnet, bookshelf, ceiling2, bed, painting, rail, rail2, stairs]
+        let debug = false
+        if (debug) {
+            for (let i=0; i<objects.length; ++i) {
+                ctx.fillStyle = 'rgba(188,143,143,0.7)';
+                ctx.fillRect(objects[i].px, objects[i].py, objects[i].width, objects[i].height);
+            }
+        }
+    }
+
+    draw()
+    window.requestAnimationFrame(main_loop);
+
+
+    
+    //animation function
+    function main_loop() {
+
+        //if statements to check for collision being drawn on canvas 
+        if (check_collision(player, ceiling)) {
+            collision_sound()
+            player.py += 5.3
+   
+        } else if (check_collision(player, cabnet)) {
+            collision_sound()
+            cabnet_collision += 1
+            player.py += 5.3
+
+        } else if (check_collision(player, ceiling2)) {
+            collision_sound()
+            player.py += 5.3
+
+        } else if (check_collision(player, painting)) {
+            collision_sound()
+            painting_collision += 1
+            player.py += 5.3
+
+        } else if (check_collision(player, rail)) {
+            collision_sound()
+            if (player.px >= 478) {
+                player.px += 5.3
+            }else {
+                player.py += 5.3
+            }
+
+        } else if (check_collision(player, rail2)) {
+            collision_sound()
+            rail2_collision += 1
+            player.px -= 5.3
+
+        } else if (check_collision(player, stairs)) {
+            play_music()
+            teleport_sound()
+            player.py = 220
+            player.px = 170
+            stair_collision += 1
+  
+        } else if (check_collision(lucario, stairs)) {
+           
+            lucario_collision = true
+            computer_on = true
+            lucario.py = 220
+            lucario.px = 170
+            lucario.vy = -15
+            teleport_sound()
+            
+        } else if (check_collision(player, floor)) {
+            collision_sound()
+            player.py -= 5.3
+
+        } else if (check_collision(player, right_wall)) {
+            collision_sound()
+            player.px -= 5.3
+
+        } else if (check_collision(player, left_wall)) {
+            collision_sound()
+            player.px += 5.3
+
+        } else if (check_collision(player, bed)) {
+            bed_contact()
+
+        } else if (check_collision(player, computer)) {
+            if (computer_on) {
+                lucario_mission()
+            } else {
+                computer_contact()
+            }
+
+        } else if (check_collision(player, tv)) {
+            collision_sound()
+            if (player.px > 290) {
+                player.px += 5.3
+            }else {
+                player.px -= 5.3
+            }
+        }else if (check_collision(player, nes)) {
+            nes_contact()
+
+        }else if (check_collision(player, dusk_ball)) {
+            if (duskball_is) {
+                teleport_sound()
+                player.py = 300
+                player.px = 520
+                stair_collision = 0
+                duskball_collision += 1
+                duskball_is = false
+            }
+
+        }else if (check_collision(player, haunted_painting)) {
+            if (haunted_painting_is) {
+                teleport_sound()
+                player.py = 220
+                player.px = 170
+                haunted_collision += 1   
+                haunted_painting_is = false
+            }
+
+        }else if (check_collision(player, lucario)) {
+            if (lucario_is) {
+                lucario_contact()
+                lucario_is = true
+            }
+
+        }else if (check_collision(player, moon_ball)) {
+            collision_sound()
+            if (left_corner_is){
+                moon_ball.px -= 10
+            } else if (right_corner_is){
+                moon_ball.px += 10
+            } else if (bear_is){
+                moon_ball.py += 10
+            } else if (bookshelf_is){
+                moon_ball.py -= 20
+            }
+            // } else if (poke_ball_is) {
+            //     poke_ball_contact += 1
+            //     // painting_collision = 0
+            //     // corner_contact = 0
+            //     // rail2_collision = 0
+            // }
+
+        }else if (check_collision(player, left_corner)) {
+            right_corner_is = false 
+            bear_is = false
+            bookshelf_is = false
+            left_corner_is = true
+
+        }else if (check_collision(player, right_corner)) {
+            left_corner_is = false
+            bear_is = false
+            bookshelf_is = false
+            right_corner_is = true
+
+        }else if (check_collision(player, bookshelf)) {
+            collision_sound()
+            player.py += 5.3
+            left_corner_is = false
+            bear_is = false
+            right_corner_is = false 
+            bookshelf_is = true
+            
+
+        }else if (check_collision(player, teddy_bear)) {
+            left_corner_is = false
+            right_corner_is = false 
+            bookshelf_is = false
+            bear_is = true
+
+        }else if (moon_ball.px >= 600) {
+            move_ball_down = true
+            moon_ball.px = 175
+            moon_ball.py = 175
+            teddy_bear.px = 340
+            teddy_bear.py = 220
+
+        } else if (check_collision(moon_ball, ceiling)) {
+            collision_sound()
+            moon_ball.py += 5.3
+   
+        } else if (check_collision(moon_ball, cabnet)) {
+            collision_sound()
+            moon_ball.py += 5.3
+
+        } else if (check_collision(moon_ball, ceiling2)) {
+            collision_sound()
+            moon_ball.py += 5.3
+
+        } else if (check_collision(moon_ball, painting)) {
+            collision_sound()
+            moon_ball.py += 5.3
+
+        } else if (check_collision(moon_ball, rail)) {
+            collision_sound()
+            if (moon_ball.px >= 478) {
+                moon_ball.px += 5.3
+            }else {
+                moon_ball.py += 5.3
+            }
+ 
+
+        } else if (check_collision(moon_ball, left_wall)) {
+            collision_sound()
+            moon_ball.px += 5.3
+
+
+
+        } else if (check_collision(moon_ball, rail2)) {
+            collision_sound()
+            moon_ball.px -= 5.3
+        
+
+        } else if (check_collision(moon_ball, stairs)) {
+            play_music()
+            teleport_sound()
+            collision_sound()
+            piano_sound()
+            move_ball_down = false
+            poke_ball_is = false
+            teddy_bear.py = 2320
+            teddy_bear.px = 1730
+            moon_ball.py = 2320
+            moon_ball.px = 1730
+            stair_collision = 0
+            ball_gone = true
+            scroll_.px = 560
+            scroll_.py = 105
+
+        
+
+        } else if (check_collision(player, scroll_)) {
+            read_scroll()
+
+
+
+        } else {
+            close_computer.onclick() 
+            close_nes.onclick()
+            close_logout.onclick()
+            close_lucario.onclick()
+            close_load.onclick()  
+            close_mission.onclick()
+            close_scroll.onclick()
+        }
+ 
+        player.px += player.vx
+        player.py += player.vy
+
+        lucario.px += lucario.vx
+        lucario.py += lucario.vy
+
+        draw()
+        window.requestAnimationFrame(main_loop);
+    }
+
+
+    // function for calculating the overlap between two rectangles
+    function check_collision(rect1, rect2) {
+        let x_overlap = Math.max(0, Math.min(rect1.px + rect1.width, rect2.px + rect2.width) - Math.max(rect1.px, rect2.px))
+        let y_overlap = Math.max(0, Math.min(rect1.py + rect1.height, rect2.py + rect2.height) - Math.max(rect1.py, rect2.py))
+        let overlapArea = x_overlap * y_overlap
+        return overlapArea != 0
+
+    }
+
+
+
+    //keyboard commands
+    document.body.onkeydown = function(e) {
+        if (e.keyCode == 32 || e.keyCode == 38 || e.keyCode == 87) {
+            player.py -= 11.3
+        }
+        if (player.vx == 0){
+            if (e.keyCode == 65 || e.keyCode == 37) {
+                player.px -= 11.3
+            } else if (e.keyCode == 68 || e.keyCode == 39) {
+                player.px += 11.3
+            } else if (e.keyCode == 40 || e.keyCode == 83) {
+                player.py += 11.3
+            }
+        }
+    }
+
+    //speech recognition function
+    start_listening = function () {
+        if ('webkitSpeechRecognition' in window) {
+            var speechRecognizer = new webkitSpeechRecognition();
+
+            //set rules for speech recognition 
+            speechRecognizer.continuous = true;
+            speechRecognizer.interimResults = true;
+            speechRecognizer.lang = 'en-US';
+
+            //start speech recognition function 
+            speechRecognizer.start();
+
+            //function to process speech recognition results 
+            speechRecognizer.onresult = function(event) {
+                var last = event.results.length - 1;
+                var command = event.results[last][0].transcript;
+
+                //display results on screen 
+                speech_results.textContent = 'Voice Input: ' + command + '.';
+
+                //dom manipulation based on commands 
+                command = command.toLowerCase()
+                if (command === 'up' || command[0] == 'u') {
+                    player.py -= 45.3
+                    draw()
+                    start_listening()
+                } else if (command === 'left' || command[0] == 'l') {
+                    player.px -= 45.3
+                    draw()
+                    start_listening()
+                } else if (command === 'right' || command[0] == 'r') {
+                    player.px += 45.3
+                    draw()
+                    start_listening()
+                } else if (command === 'down' || command[0] == 'd') {
+                    player.py += 45.3
+                    draw()
+                    start_listening()
+                } else if (command === 'come') {
+                    player.py = 100
+                    player.px = 0
+                    draw()
+                    start_listening()
+                } else if (command === 'bed') {
+                    player.py = 220
+                    player.px = 40
+                    draw()
+                    start_listening()
+                } else {
+                    start_listening()
+                }
+            }
+        }
+    };
+    start_listening()
+  
+</script>
+{% endblock %}

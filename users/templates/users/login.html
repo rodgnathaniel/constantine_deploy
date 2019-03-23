@@ -1,0 +1,15 @@
+{% extends "users/home_base.html" %}
+{% block content %}
+    <div>
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset id="log_form">
+                <legend>Welcome</legend>
+                {{ form.as_p }}
+            </fieldset>
+            <div>
+                <button class="btn" type="submit">Login</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}
